@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt 
 
 
-from kuramoto import Kuramoto, plot_activity
+from kuramoto import Kuramoto, plot_activity, plot_phase_coherence
 
 sns.set_style("whitegrid")
 sns.set_context("notebook", font_scale=1.6)
@@ -16,5 +16,6 @@ model = Kuramoto(coupling=4, dt=0.01, T=10, n_nodes=len(matrix))
 activity = model.run(adj_mat=matrix)
 
 plot_activity(activity)
+plot_phase_coherence(activity)
 
 plt.show()
