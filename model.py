@@ -23,10 +23,29 @@ def main():
         t_span=(0.0, 10.0),
         y0=[x_initial],
         args=(K,),
+        t_eval=np.linspace(0.0, 10.0, 201)
     )
 
     times = solution.t
     populations = solution.y[0]
+
+    plt.plot(
+        times,
+        populations,
+        label=f"x(0) = {x_initial}"
+    )
+
+    plt.axhline(
+        K,
+        color = "red",
+        linestyle = "--",
+        label = f"Carrying Capacity K = {K}",
+    )
+
+    plt.xlabel("Time")
+    plt.ylabel("Population")
+    plt.legend()
+    plt.show()
 
     print(f"Initial population: {populations[0]:.4f}")
     print(f"Final population: {populations[-1]:.4f}")
