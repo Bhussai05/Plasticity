@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from model import pop_rate
+from model import pop_rate, simulate_population
 
 def test_zero_population():
     assert pop_rate(0.0, 0.0, 1.0) == pytest.approx(0.0)
@@ -43,4 +43,21 @@ def tests_rate_handling_multiple_populations():
         rates,
         [0.0, 0.09, 0.0, -0.75],
         atol=1e-12
+    )
+
+
+def test_simulation_matches_exact_solution():
+    K = 1.0
+    x_initial = 0.1
+
+    solution = simulate_population(x_initial=x_initial, K=K)
+
+    assert solution.success, solution.message
+    assert solution.t[-1] == pytest.approx(10.0)
+
+    expected = K / (1 + (K / x_initial - 1) * np.exp(-solution.t))
+
+   
+    np.testing.assert_allclose(
+        solution.y[0], expected, rtol=5e-3, atol=1e-6, equal_nan=False
     )
