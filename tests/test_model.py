@@ -61,3 +61,5 @@ def test_simulation_matches_exact_solution():
     np.testing.assert_allclose(
         solution.y[0], expected, rtol=5e-3, atol=1e-6, equal_nan=False
     )
+
+
