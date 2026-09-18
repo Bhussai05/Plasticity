@@ -6,8 +6,8 @@ from scipy.integrate import solve_ivp
 
 
 
-state = [1.0, 5]
-a = 0.1
+state = [1.0, 0.5]
+a = 1.0
 b = 0.1
 c = 0.01
 
@@ -41,6 +41,23 @@ def simulate_population(state, K, a,b,c):
 
 def main():
     K = 1.0
+
+    M = np.array([
+        [0.0, -a],
+        [b*a, 0.0]
+    ])
+
+    r = np.array([1.0, -c])
+    q = np.array([1.0 / K, 0.0])
+
+    x = np.array(state, dtype=float)
+
+    matrix_rates = x * (r - q * x + M @ x)
+
+    original_rates = simulate_population
+
+
+
     solution = simulate_population(state=state, K=K, a=a, b=b, c=c)
 
     times = solution.t
