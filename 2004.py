@@ -1,42 +1,59 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-x_lim = 5
-y_0 = [5,3,2]
 
-alpha = 1
+
+rng = np.random.default_rng(7)
+N = 2
+K = 5
+y_0 = [5,3]
+connection = 1
+
 b = 0.1
 c = 0.2
 
+M = np.zeros((N,N))
 
-def rates(t,y, x_lim, alpha, b, c):
+for i in range(N):
+    for j in range(i+1, N):
+        if rng.random() < connection:
 
+            alpha = rng.random()
+
+            if rng.random() < 0.5:
+                predator, prey = i,j
+            else:
+                predator, prey = j,i
+
+            M[predator, prey] = alpha
+            M[prey, predator] = -b * alpha
+
+autotroph = np.array([True,False])
+
+
+def rates(t,y,c,K_1):
     x = np.array(y)
 
-    M =  np.array([
-        [0.0, - b * alpha, 0.0],
-        [alpha, 0.0, -b*alpha ],
-        [0.0, alpha, 0.0]
-        ])
+    interactions = x * (M@x)
 
-    interaction = x * (M @ x )
+    dx = interactions.copy()
 
-    x1, x2, x3 = x
+    for i in range(N):
+        if autotroph[i]:
+            dx[i] += x[i] * (1- x[i]/ K_1)
+        else:
+            dx[i] += -c*x[i]
 
+    return dx
 
-    dx1 = x1 *(1 - x1 / x_lim) + interaction[0]
-    dx2 = (-1) * c *x2 + interaction[1]
-    dx3 = (-1) * c *x3 + interaction[2]
-
-    return[dx1, dx2, dx3]
-
+    
 
 
 sol = solve_ivp(
     rates,
     (0,20),
     y_0,
-    args=(x_lim, alpha, b,c )
+    args=(c,K)
 )
 
 
