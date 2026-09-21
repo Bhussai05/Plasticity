@@ -4,15 +4,15 @@ import matplotlib.pyplot as plt
 
 
 rng = np.random.default_rng(7)
-N = 5
+N = 10
 K = 5
-connection = 0.5
+connection = 0.15
 
 b = 0.1
 c = 0.2
 epsilon = 0.01
 
-n_autotrophs = 2
+n_autotrophs = 5
 
 autotroph = np.zeros(N, dtype=bool)
 
@@ -57,7 +57,7 @@ for k, (predator, prey) in enumerate(edges):
         f"species {prey + 1}, A0 = {A0[k]:.3f}"
     )
 
-x_0 = np.array([5,3,2,4,1], dtype=float)
+x_0 = rng.uniform(1.0,5.0, size=N)
 
 
 
@@ -110,7 +110,7 @@ def rates(t,y,c,K_1, epsilon):
         alpha = min(A[k],1.0)
 
         raw_dA = (
-            epsilon * x[prey] - x[predator] * alpha
+            epsilon * (x[prey] - x[predator]) * alpha
         )
 
         if A[k] >= 1.0 and raw_dA > 0:
