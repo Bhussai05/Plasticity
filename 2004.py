@@ -139,12 +139,38 @@ print("\nSolver Sucess:")
 print(sol.success)
 print(sol.message)
 
+X = sol.y[:N]
 
+A_solution = sol.y[N:]
+A_solution = np.minimum(A_solution, 1.0)
 
-plt.plot(sol.t, sol.y[0], label="x1")
-plt.plot(sol.t, sol.y[1], label="x2")
-plt.plot(sol.t, sol.y[2], label="alpha")
+plt.figure()
 
+for i in range(N):
+    plt.plot(
+        sol.t,
+        X[i],
+        label = f"x{i+1}"
+    )
+
+plt.xlabel("Time")
+plt.ylabel("population")
 plt.legend()
-plt.xlabel("t")
+plt.show()
+
+plt.figure()
+
+for k in range(len(edges)):
+    predator, prey = edges[k]
+
+    plt.plot(
+        sol.t,
+        A_solution[k],
+        label = f"{predator +1} eats {prey+1}"
+
+    )
+
+plt.xlabel("Time")
+plt.ylabel("Link strenghts A")
+plt.legend()
 plt.show()
