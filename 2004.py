@@ -9,7 +9,7 @@ K = 5
 connection = 0.15
 
 b = 0.1
-c = 0.2
+c = 0.01
 epsilon = 0.01
 
 n_autotrophs = 5
@@ -34,15 +34,18 @@ A0 = []
 
 for i in range(N):
     for j in range(i+1, N):
-
+        if autotroph[i] and autotroph[j]:
+            continue
         if rng.random() < connection:
-
             alpha_0 = rng.random()
-
-            if rng.random() < 0.5:
+            if autotroph[i]:
+                predator,prey = j,i
+            elif autotroph[j]:
+                predator, prey = i,j
+            elif rng.random() < 0.5:
                 predator, prey = i,j
             else:
-                predator, prey = j,i
+                predator,prey = j,i 
 
 
             edges.append((predator, prey))
@@ -85,11 +88,11 @@ def rates(t,y,c,K_1, epsilon):
 
     for k, (predator,prey) in enumerate(edges):
 
-        alpha = min(A[k], 1.0)
+        alpha = np.clip(A[k], 0.0, 1.0)
 
-        M[predator,prey] = alpha
+        M[predator,prey] = b*alpha
 
-        M[prey,predator] = -b * alpha
+        M[prey,predator] =  -alpha
     
 
     interactions = x * (M@x)
@@ -109,25 +112,25 @@ def rates(t,y,c,K_1, epsilon):
 
         alpha = min(A[k],1.0)
 
-        raw_dA = (
+        dA_dt = (
             epsilon * (x[prey] - x[predator]) * alpha
         )
 
-        if A[k] >= 1.0 and raw_dA > 0:
-            raw_dA = 0.0
+        if A[k] >= 1.0 and dA_dt > 0:
+            dA_dt = 0.0
 
-        dA[k] = raw_dA
+        dA[k] = dA_dt
 
     return np.concatenate((dx, dA))
 
-t_eval = np.linspace(0,20, 1000)
+t_eval = np.linspace(0,2000, 1000)
 
 
 
 
 sol = solve_ivp(
     rates,
-    (0,20),
+    (0,2000),
     y_0,
     args=(c,K, epsilon),
     t_eval=t_eval,
@@ -174,3 +177,5 @@ plt.xlabel("Time")
 plt.ylabel("Link strenghts A")
 plt.legend()
 plt.show()
+
+
