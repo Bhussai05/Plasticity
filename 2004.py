@@ -88,8 +88,7 @@ def rates(t,y,c,K_1, epsilon):
 
     for k, (predator,prey) in enumerate(edges):
 
-        alpha = A[k]
-        # alpha = np.clip(A[k], 0.0, 1.0)
+        alpha = np.clip(A[k], 0.0, 1.0)
 
         M[predator,prey] = b*alpha
 
@@ -120,13 +119,6 @@ t_eval = np.linspace(0,2000, 1000)
 
 
 
-def u_event(t,y,c,K_1,epsilon):
-    return y[N + k] - 1.0
-
-    # return u_event
-
-u_event.terminal = True
-u_event.direction = 0
 
 
 
@@ -136,7 +128,6 @@ sol = solve_ivp(
     y_0,
     args=(c,K, epsilon),
     # t_eval=t_eval,
-    events=u_event,
     # max_step = 0.05
 )
 
