@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 rng = np.random.default_rng(7)
-N = 10
+N = 15
 K = 5
 connection = 0.15
 
@@ -88,7 +88,8 @@ def rates(t,y,c,K_1, epsilon):
 
     for k, (predator,prey) in enumerate(edges):
 
-        alpha = np.clip(A[k], 0.0, 1.0)
+        alpha = A[k]
+        # alpha = np.clip(A[k], 0.0, 1.0)
 
         M[predator,prey] = b*alpha
 
@@ -110,16 +111,7 @@ def rates(t,y,c,K_1, epsilon):
 
     for k, (predator,prey) in enumerate(edges):
 
-        alpha = min(A[k],1.0)
-
-        dA_dt = (
-            epsilon * (x[prey] - x[predator]) * alpha
-        )
-
-        if A[k] >= 1.0 and dA_dt > 0:
-            dA_dt = 0.0
-
-        dA[k] = dA_dt
+        dA[k] = epsilon * (x[prey] - x[predator]) * A[k]
 
     return np.concatenate((dx, dA))
 
@@ -128,14 +120,24 @@ t_eval = np.linspace(0,2000, 1000)
 
 
 
+def u_event(t,y,c,K_1,epsilon):
+    return y[N + k] - 1.0
+
+    # return u_event
+
+u_event.terminal = True
+u_event.direction = 0
+
+
+
 sol = solve_ivp(
     rates,
-    (0,2000),
+    (0,500),
     y_0,
     args=(c,K, epsilon),
-    t_eval=t_eval,
-
-    max_step = 0.05
+    # t_eval=t_eval,
+    events=u_event,
+    # max_step = 0.05
 )
 
 print("\nSolver Sucess:")
@@ -145,7 +147,7 @@ print(sol.message)
 X = sol.y[:N]
 
 A_solution = sol.y[N:]
-A_solution = np.minimum(A_solution, 1.0)
+
 
 plt.figure()
 
