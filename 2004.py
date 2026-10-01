@@ -135,11 +135,13 @@ def rates(t,y,c,K_1, epsilon,equation, clip_links):
 
 sol = solve_ivp(
     rates,
-    (0,500),
+    (0,T_END),
     y_0,
-    args=(c,K, epsilon),
-    # t_eval=t_eval,
-    # max_step = 0.05
+    args=(c,K, epsilon,EVOLUTION_EQUATION, EXTINCTION_THRESHOLD, CLIP_LINKS),
+    method=METHOD
+    rtol=RTOL
+    atol=ATOL
+    max_step=MAX_STEP
 )
 
 print("\nSolver Sucess:")
@@ -147,9 +149,33 @@ print(sol.success)
 print(sol.message)
 
 X = sol.y[:N]
+A_raw_solution = sol.y[N:]
 
-A_solution = sol.y[N:]
+if CLIP_LINKS:
+    A_solution = np.clip(A_raw_solution, 0.0,1.0)
+else:
+    A_solution = A_raw_solution
 
+last_x = X[:,-1]
+
+survivors = np.count_nonzero(
+    last_x > EXTINCTION_THRESHOLD
+)
+
+print("Equation:", EVOLUTION_EQUATION)
+print("NumPy clipping:", CLIP_LINKS)
+print("Solver success:", sol.success)
+print(sol.message)
+print("Last saved time:", sol.t[-1])
+print("Survivors:", survivors, "out of", N)
+print("Population range:", last_x.min(), last_x.max())
+
+if len(edges) > 0:
+    last_raw_A = A_raw_solution[:, -1]
+    last_A = A_solution[:,-1]
+
+print("Raw link range:", last_raw_A.min(), last_raw_A.max())
+print("Effective link range:m", last_A.min(), last_A.max())
 
 plt.figure()
 
