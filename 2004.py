@@ -168,6 +168,7 @@ for k in range(len(edges)):
 
 plt.xlabel("Time")
 plt.ylabel("Link strenghts A")
+plt.yscale("log")
 plt.legend()
 plt.show()
 
