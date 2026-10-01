@@ -26,16 +26,7 @@ MAX_STEP = np.inf
 if EVOLUTION_EQUATION not in (5, 6, 7):
     raise ValueError("EVOLUTION_EQUATION must be 5, 6, or 7.")
 
-rng = np.random.default_rng(7)
-N = 15
-K = 5
-connection = 0.15
-
-b = 0.1
-c = 0.01
-epsilon = 0.01
-
-n_autotrophs = 5
+rng = np.random.default_rng(seed=seed)
 
 autotroph = np.zeros(N, dtype=bool)
 
@@ -46,9 +37,6 @@ autotroph_indices = rng.choice(
 )
 
 autotroph[autotroph_indices] = True
-
-print("Autotropph Mask:")
-print(autotroph)
 
 
 edges = []
@@ -76,58 +64,45 @@ for i in range(N):
 
 A0 = np.array(A0, dtype=float)
 
-print("\nEdges:")
-for k, (predator, prey) in enumerate(edges):
-    print(
-        f"link {k}: species {predator + 1} eats "
-        f"species {prey + 1}, A0 = {A0[k]:.3f}"
-    )
-
 x_0 = rng.uniform(1.0,5.0, size=N)
-
-
 
 y_0 = np.concatenate((x_0, A0))
 
 
-print("\nInitial full state:")
-print(y_0)
 
-print("\nInitial populations:")
-print(y_0[:N])
+def rates(t,y,c,K_1, epsilon,equation, clip_links):
 
-print("\nInitial link strengths:")
-print(y_0[N:])
+    x = y[:N].copy()
 
+    for i in range(N):
+        if x[i] <= EXTINCTION_THRESHOLD:
+            x[i] = 0.0
 
+    A_raw= y[N:]
 
-
-
-def rates(t,y,c,K_1, epsilon):
-    x = y[:N]
-    A = y[N:]
+    if clip_links:
+        A = np.clip(A_raw, 0.0, 1.0)
+    else:
+        A = A_raw
 
     M = np.zeros((N,N))
 
     for k, (predator,prey) in enumerate(edges):
 
-        alpha = np.clip(A[k], 0.0, 1.0)
+        M[predator,prey] = b*A[k]
 
-        M[predator,prey] = b*alpha
-
-        M[prey,predator] =  -alpha
+        M[prey,predator] =  -A[k]
     
 
-    interactions = x * (M@x)
-
-    dx = interactions.copy()
+    relative_growth= M@x
 
     for i in range(N):
         if autotroph[i]:
-            dx[i] += x[i] * (1- x[i]/ K_1)
+            relative_growth[i] += 1.0 *  x[i]/ K_1
         else:
-            dx[i] += -c*x[i]
+            relative_growth[i] -= -c
 
+    dx = x * relative_growth
 
     dA = np.zeros(len(A))
 
