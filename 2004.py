@@ -108,13 +108,26 @@ def rates(t,y,c,K_1, epsilon,equation, clip_links):
 
     for k, (predator,prey) in enumerate(edges):
 
-        dA[k] = epsilon * (x[prey] - x[predator]) * A[k]
+        if equation == 5:
+
+            dA[k] = epsilon * (x[prey] - x[predator]) * A[k]
+
+        elif equation == 6:
+
+            dA[k] = (epsilon *(relative_growth[prey] - relative_growth[predator]) * A[k])
+
+        elif equation == 7:
+
+            dA[k] = epsilon *x[prey] * A[k]
+
+        if clip_links:
+
+            if A_raw[k] >= 1.0 and dA[k] > 0.0:
+                dA[k] = 0.0
+            if A_raw[k] <= 0.0 and dA[k] < 0.0:
+                dA[k] = 0.0
 
     return np.concatenate((dx, dA))
-
-t_eval = np.linspace(0,2000, 1000)
-
-
 
 
 
