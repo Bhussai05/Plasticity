@@ -177,36 +177,102 @@ if len(edges) > 0:
 print("Raw link range:", last_raw_A.min(), last_raw_A.max())
 print("Effective link range:m", last_A.min(), last_A.max())
 
-plt.figure()
+
+if CLIP_LINKS:
+    clipping_label = "ON [0,1]"
+else:
+    clipping_label = "OFF"
+
+if sol.success:
+    solver_label = "SUCCESS"
+else:
+    solver_label = "FAILED"
+
+parameters = (
+    f"N={N}; autotrophs={n_autotrophs}; links={len(edges)}; "
+    f"connection={connection:g}; seed={seed}\n"
+    f"K={K:g}; b={b:g}; c={c:g}; epsilon={epsilon:g}; "
+    f"initial populations=U[1, 5]; extinction={EXTINCTION_THRESHOLD:g}\n"
+    f"Time requested={T_END:g}; time reached={sol.t[-1]:.6g}; "
+    f"survivors={survivors}/{N}\n"
+    f"Solver={METHOD}; rtol={RTOL:g}; atol={ATOL:g}; "
+    f"max_step={MAX_STEP:g}"
+)
+
+fig, axes = plt.subplots(2,1,figsize=(12,10))
+
+fig.suptitle(
+    f"Eq. ({EVOLUTION_EQUATION}) |",
+    f"np.clip: {clipping_label} | Solver: {solver_label}",
+    fontsize = 14
+)
+
 
 for i in range(N):
-    plt.plot(
+    if autotroph[i]:
+        species_type = "plant"
+    else:
+        species_type = "animal"
+
+    axes[0].plot(
         sol.t,
         X[i],
-        label = f"x{i+1}"
+        label=f"x{i+1} ({species_type})"
     )
 
-plt.xlabel("Time")
-plt.ylabel("population")
-plt.legend()
-plt.show()
+axes[0].set_xlabel("Time")
+axes[0].set_ylabel("Population")
+axes[0].grid(alpha=0.25)
+axes[0].legend(
+    loc="upper left",
+    bbox_to_anchor=(1.02, 1.0),
+    fontsize=8
+)
 
-plt.figure()
 
-for k in range(len(edges)):
-    predator, prey = edges[k]
-
-    plt.plot(
+for k, (predator,prey) in enumerate(edges):
+    axes[1].plot(
         sol.t,
         A_solution[k],
         label = f"{predator +1} eats {prey+1}"
-
     )
 
-plt.xlabel("Time")
-plt.ylabel("Link strenghts A")
-plt.yscale("log")
-plt.legend()
-plt.show()
+if len(edges) > 0:
 
+    if np.all(A_solution > 0.0):
+        axes[1].set_yscale("log")
+    else:
+        axes[1].set_yscale("symlog", linthresh = ATOL)
+
+    axes[1].legend(
+        loc="upper left",
+        bbox_to_anchor=(1.02,1.0),
+        fontsize=8
+    )
+
+axes[1].set_xlabel("Time")
+
+if CLIP_LINKS:
+    axes[1].set_ylabel("Effective link strength A")
+else:
+    axes[2].set_ylabel("Raw link strength A")
+
+fig.text(
+    0.08,
+    0.025,
+    parameters,
+    fontsize=9,
+    va="bottom"
+)
+
+
+fig.subplots_adjust(
+    left=0.08,
+    right=0.76,
+    top=0.92,
+    bottom=0.18,
+    hspace=0.35
+)
+
+plt.show()
 
