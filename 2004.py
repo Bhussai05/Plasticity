@@ -3,6 +3,29 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
 
+EVOLUTION_EQUATION = 6
+CLIP_LINKS = True
+
+seed = 7
+N = 15
+K = 5
+connection = 0.15
+b = 0.1
+c = 0.01
+epsilon = 0.01
+
+n_autotrophs = 5
+EXTINCTION_THRESHOLD = 1e-6
+
+T_END = 1000.0
+METHOD = "DOP853"
+RTOL = 1e-6
+ATOL = 1e-9
+MAX_STEP = np.inf
+
+if EVOLUTION_EQUATION not in (5, 6, 7):
+    raise ValueError("EVOLUTION_EQUATION must be 5, 6, or 7.")
+
 rng = np.random.default_rng(7)
 N = 15
 K = 5
