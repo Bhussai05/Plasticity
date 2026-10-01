@@ -138,9 +138,9 @@ sol = solve_ivp(
     (0,T_END),
     y_0,
     args=(c,K, epsilon,EVOLUTION_EQUATION, EXTINCTION_THRESHOLD, CLIP_LINKS),
-    method=METHOD
-    rtol=RTOL
-    atol=ATOL
+    method=METHOD,
+    rtol=RTOL,
+    atol=ATOL,
     max_step=MAX_STEP
 )
 
