@@ -5,10 +5,10 @@ from pathlib import Path
 from datetime import datetime
 
 
-# ---------- DEFAULT SETTINGS ----------
+
 
 EVOLUTION_EQUATION = 6
-CLIP_LINKS = True
+CLIP_LINKS = False
 
 seed = 7
 N = 20
@@ -34,7 +34,6 @@ if EVOLUTION_EQUATION not in (5, 6, 7):
     raise ValueError("EVOLUTION_EQUATION must be 5, 6, or 7.")
 
 
-# ---------- GENERATE THE NETWORK ONCE ----------
 
 rng = np.random.default_rng(seed=seed)
 
@@ -82,7 +81,7 @@ x_0 = rng.uniform(1.0, 5.0, size=N)
 y_0 = np.concatenate((x_0, A0))
 
 
-# ---------- POPULATION AND LINK EQUATIONS ----------
+
 
 def rates(t, y, c, K_1, epsilon, equation, clip_links):
 
@@ -151,12 +150,11 @@ def rates(t, y, c, K_1, epsilon, equation, clip_links):
             if A_raw[k] <= 0.0 and dA[k] < 0.0:
                 dA[k] = 0.0
 
-    # Clipping bounds effective strengths.
-    # The raw solver state can still overshoot slightly.
+   
     return np.concatenate((dx, dA))
 
 
-# ---------- COMMAND-LINE PROMPT ----------
+
 
 answer = input(
     "Generate all 6 figures and save them to Desktop? [y/N]: "
@@ -182,11 +180,10 @@ else:
     runs = [(EVOLUTION_EQUATION, CLIP_LINKS)]
 
 
-# ---------- RUN EACH CONFIGURATION ----------
+
 
 for equation, clip_links in runs:
 
-    # Every run starts from the same populations and link strengths.
     sol = solve_ivp(
         rates,
         (0.0, T_END),
@@ -220,7 +217,7 @@ for equation, clip_links in runs:
     print("Survivors:", survivors, "out of", N)
     print("Population range:", last_x.min(), last_x.max())
 
-    # Report link ranges only for the final surviving web.
+  
     active_raw_A = []
     active_A = []
 
@@ -249,7 +246,7 @@ for equation, clip_links in runs:
         print("No feeding links remain between surviving species.")
 
 
-    # ---------- FIGURE LABELS ----------
+
 
     if clip_links:
         clipping_label = "ON [0, 1]"
@@ -288,7 +285,7 @@ for equation, clip_links in runs:
     )
 
 
-    # ---------- POPULATION PLOT ----------
+    
 
     for i in range(N):
 
@@ -314,7 +311,7 @@ for equation, clip_links in runs:
     )
 
 
-    # ---------- LINK PLOT ----------
+
 
     plotted_links_positive = True
 
@@ -372,7 +369,7 @@ for equation, clip_links in runs:
         axes[1].set_ylabel("Raw link strength A")
 
 
-    # ---------- LAYOUT ----------
+
 
     fig.text(
         0.08,
@@ -391,7 +388,7 @@ for equation, clip_links in runs:
     )
 
 
-    # ---------- SAVE OR SHOW ----------
+
 
     if generate_all:
 
