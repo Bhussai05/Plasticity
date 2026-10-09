@@ -12,7 +12,6 @@ CLIP_LINKS = False
 
 seed = 7
 N = 100
-N_WEBS = 100
 K = 5
 connection = 0.7
 
@@ -22,7 +21,6 @@ epsilon = 0.1
 
 n_autotrophs = 5
 EXTINCTION_THRESHOLD = 1e-6
-
 
 T_END = 10000.0
 METHOD = "DOP853"
@@ -36,52 +34,52 @@ if EVOLUTION_EQUATION not in (5, 6, 7):
     raise ValueError("EVOLUTION_EQUATION must be 5, 6, or 7.")
 
 
-def make_web(seed):
 
-    rng = np.random.default_rng(seed=seed)
+rng = np.random.default_rng(seed=seed)
 
-    autotroph = np.zeros(N, dtype=bool)
+autotroph = np.zeros(N, dtype=bool)
 
-    autotroph_indices = rng.choice(
-        N,
-        size=n_autotrophs,
-        replace=False
-    )
+autotroph_indices = rng.choice(
+    N,
+    size=n_autotrophs,
+    replace=False
+)
 
-    autotroph[autotroph_indices] = True
+autotroph[autotroph_indices] = True
 
-    edges = []
-    A0 = []
+edges = []
+A0 = []
 
-    for i in range(N):
-        for j in range(i + 1, N):
+for i in range(N):
+    for j in range(i + 1, N):
 
-            if autotroph[i] and autotroph[j]:
-                continue
+        if autotroph[i] and autotroph[j]:
+            continue
 
-            if rng.random() < connection:
-                alpha_0 = rng.random()
+        if rng.random() < connection:
+            alpha_0 = rng.random()
 
-                if autotroph[i]:
-                    predator, prey = j, i
+            if autotroph[i]:
+                predator, prey = j, i
 
-                elif autotroph[j]:
-                    predator, prey = i, j
+            elif autotroph[j]:
+                predator, prey = i, j
 
-                elif rng.random() < 0.5:
-                    predator, prey = i, j
+            elif rng.random() < 0.5:
+                predator, prey = i, j
 
-                else:
-                    predator, prey = j, i
+            else:
+                predator, prey = j, i
 
-                edges.append((predator, prey))
-                A0.append(alpha_0)
+            edges.append((predator, prey))
+            A0.append(alpha_0)
 
-    x_0 = rng.uniform(1.0, 5.0, size=N)
+A0 = np.array(A0, dtype=float)
 
-    y_0 = np.concatenate((x_0, np.array(A0)))
+x_0 = rng.uniform(1.0, 5.0, size=N)
 
-    return autotroph, edges, y_0
+y_0 = np.concatenate((x_0, A0))
+
 
 
 
@@ -156,25 +154,6 @@ def rates(t, y, c, K_1, epsilon, equation, clip_links):
     return np.concatenate((dx, dA))
 
 
-
-all_strengths = []
-sucessful_webs = 0
-
-for run in range(N_WEBS):
-
-    autotroph, edges, y_0 = make_web(seed + run)
-
-    sol = solve_ivp(
-        rates,
-        (0.0, T_END),
-        y_0,
-        args=(c, K, epsilon, EVOLUTION_EQUATION, CLIP_LINKS),
-        method=METHOD,
-        rtol=RTOL,
-        atol=ATOL,
-        max_step=MAX_STEP,
-        t_eval=[T_END]
-    )
 
 
 answer = input(
