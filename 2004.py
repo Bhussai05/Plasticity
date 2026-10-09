@@ -11,18 +11,18 @@ EVOLUTION_EQUATION = 6
 CLIP_LINKS = False
 
 seed = 7
-N = 20
+N = 15
 K = 5
-connection = 0.15
+connection = 0.7
 
 b = 0.1
 c = 0.01
-epsilon = 0.01
+epsilon = 0.1
 
-n_autotrophs = 10
+n_autotrophs = 5
 EXTINCTION_THRESHOLD = 1e-6
 
-T_END = 10000.0
+T_END = 100000.0
 METHOD = "DOP853"
 RTOL = 1e-6
 ATOL = 1e-9
@@ -198,12 +198,71 @@ for equation, clip_links in runs:
     X = sol.y[:N]
     A_raw_solution = sol.y[N:]
 
+
+    if not sol.success:
+        raise RuntimeError(sol.message)
+
+
+
     if clip_links:
         A_solution = np.clip(A_raw_solution, 0.0, 1.0)
     else:
         A_solution = A_raw_solution
 
     last_x = X[:, -1]
+
+    j = -1
+    strengths = []
+
+
+    for k, (predator,prey) in enumerate(edges):
+        predator_alive = X[predator, j] > EXTINCTION_THRESHOLD
+        prey_alive = X[prey, j] > EXTINCTION_THRESHOLD
+
+        if predator_alive and prey_alive:
+            strength = A_solution[k,j]
+
+            if strength > 0:
+                strengths.append(strength)
+
+    strengths = np.asarray(strengths)
+
+    print("Strengths collected:", strengths.size)
+
+    if strengths.size > 0:
+        print("Smallest strength:", strengths.min())
+        print("Largest strength:", strengths.max())
+
+        bin_edges = np.geomspace(
+            strengths.min(),
+            strengths.max(),
+            11
+        )
+
+        counts,_ = np.histogram(strengths, bins=bin_edges)
+
+        print("counts in each bin", counts)
+        print("total counted", counts.sum())
+
+        centres = np.sqrt(bin_edges[:-1] * bin_edges[1:])
+        widths = np.diff(bin_edges)
+        number_density = counts/widths 
+
+        nonempty = counts > 0
+        fig_dist, ax_dist = plt.subplots()
+
+        ax_dist.loglog(
+            centres[nonempty],
+            number_density[nonempty],
+            "o"
+        )
+        ax_dist.set_xlabel("Link strength A")
+        ax_dist.set_ylabel("Number of links per unit strength")
+        ax_dist.set_title(f"Equation {equation}: final link distribution")
+        ax_dist.grid(alpha=0.25)
+
+
+
 
     survivors = np.count_nonzero(
         last_x > EXTINCTION_THRESHOLD
@@ -310,33 +369,15 @@ for equation, clip_links in runs:
         fontsize=8
     )
 
-
-
-
-    plotted_links_positive = True
+    plotted_links_positive = np.all(A_solution > 0.0)
 
     for k, (predator, prey) in enumerate(edges):
-
-        A_plot = A_solution[k].copy()
-
-        # NaN stops the plotted curve after extinction.
-        # It does not change the integrated link strengths.
-        for j in range(len(sol.t)):
-
-            if (
-                X[predator, j] <= EXTINCTION_THRESHOLD
-                or X[prey, j] <= EXTINCTION_THRESHOLD
-            ):
-                A_plot[j] = np.nan
-
-            elif A_plot[j] <= 0.0:
-                plotted_links_positive = False
-
         axes[1].plot(
             sol.t,
-            A_plot,
+            A_solution[k],
             label=f"{predator + 1} eats {prey + 1}"
-        )
+    )
+
 
     if len(edges) > 0:
 
