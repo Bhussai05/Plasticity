@@ -7,19 +7,20 @@ from datetime import datetime
 
 
 
-EVOLUTION_EQUATION = 6
+EVOLUTION_EQUATION = 5
 CLIP_LINKS = False
 
 seed = 7
-N = 100
+N = 20
 K = 5
 connection = 0.7
 
 b = 0.1
 c = 0.01
 epsilon = 0.1
+gamma = 0.5
 
-n_autotrophs = 5
+n_autotrophs = 10
 EXTINCTION_THRESHOLD = 1e-6
 
 T_END = 10000.0
@@ -126,7 +127,7 @@ def rates(t, y, c, K_1, epsilon, equation, clip_links):
             dA[k] = (
                 epsilon
                 * (x[prey] - x[predator])
-                * A[k]
+                * A[k] - gamma * A[k]**2
             )
 
         elif equation == 6:
@@ -236,7 +237,7 @@ for equation, clip_links in runs:
         bin_edges = np.geomspace(
             strengths.min(),
             strengths.max(),
-            11
+            21
         )
 
         counts,_ = np.histogram(strengths, bins=bin_edges)
