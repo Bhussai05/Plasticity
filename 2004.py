@@ -17,8 +17,8 @@ connection = 0.7
 
 b = 0.1
 c = 0.01
-epsilon = 0.1
-gamma = 0.5
+epsilon = 0.01
+gamma = 5.0
 
 n_autotrophs = 10
 EXTINCTION_THRESHOLD = 1e-6
@@ -51,28 +51,28 @@ autotroph[autotroph_indices] = True
 edges = []
 A0 = []
 
-for i in range(N):
-    for j in range(i + 1, N):
+for u in range(N):
+    for v in range(u + 1, N):
 
-        if autotroph[i] and autotroph[j]:
+        if autotroph[u] and autotroph[v]:
             continue
 
         if rng.random() < connection:
             alpha_0 = rng.random()
 
-            if autotroph[i]:
-                predator, prey = j, i
+            if autotroph[u]:
+                i, j = v, u
 
-            elif autotroph[j]:
-                predator, prey = i, j
+            elif autotroph[v]:
+                i, j = u, v
 
             elif rng.random() < 0.5:
-                predator, prey = i, j
+                i,j = u, v
 
             else:
-                predator, prey = j, i
+                i,j = v, u
 
-            edges.append((predator, prey))
+            edges.append((i, j))
             A0.append(alpha_0)
 
 A0 = np.array(A0, dtype=float)
@@ -101,9 +101,9 @@ def rates(t, y, c, K_1, epsilon, equation, clip_links):
 
     M = np.zeros((N, N))
 
-    for k, (predator, prey) in enumerate(edges):
-        M[predator, prey] = b * A[k]
-        M[prey, predator] = -A[k]
+    for k, (i, j) in enumerate(edges):
+        M[i, j] = b * A[k]
+        M[j, i] = -A[k]
 
     relative_growth = M @ x
 
@@ -117,16 +117,16 @@ def rates(t, y, c, K_1, epsilon, equation, clip_links):
 
     dA = np.zeros(len(A))
 
-    for k, (predator, prey) in enumerate(edges):
+    for k, (i, j) in enumerate(edges):
 
         # Freeze the link if either species is extinct.
-        if x[predator] == 0.0 or x[prey] == 0.0:
+        if x[i] == 0.0 or x[j] == 0.0:
             continue
 
         if equation == 5:
             dA[k] = (
                 epsilon
-                * (x[prey] - x[predator])
+                * (x[j] - x[i])
                 * A[k] - gamma * A[k]**2
             )
 
@@ -134,14 +134,14 @@ def rates(t, y, c, K_1, epsilon, equation, clip_links):
             dA[k] = (
                 epsilon
                 * (
-                    relative_growth[prey]
-                    - relative_growth[predator]
+                    relative_growth[j]
+                    - relative_growth[i]
                 )
                 * A[k]
             )
 
         elif equation == 7:
-            dA[k] = epsilon * x[prey] * A[k]
+            dA[k] = epsilon * x[j] * A[k]
 
         if clip_links:
 
@@ -212,16 +212,16 @@ for equation, clip_links in runs:
 
     last_x = X[:, -1]
 
-    j = -1
+    laststep = -1
     strengths = []
 
 
-    for k, (predator,prey) in enumerate(edges):
-        predator_alive = X[predator, j] > EXTINCTION_THRESHOLD
-        prey_alive = X[prey, j] > EXTINCTION_THRESHOLD
+    for k, (i,j) in enumerate(edges):
+        i_alive = X[i, laststep] > EXTINCTION_THRESHOLD
+        j_alive = X[j, laststep] > EXTINCTION_THRESHOLD
 
-        if predator_alive and prey_alive:
-            strength = A_solution[k,j]
+        if i_alive and j_alive:
+            strength = A_solution[k,laststep]
 
             if strength > 0:
                 strengths.append(strength)
@@ -281,10 +281,10 @@ for equation, clip_links in runs:
     active_raw_A = []
     active_A = []
 
-    for k, (predator, prey) in enumerate(edges):
+    for k, (i, j) in enumerate(edges):
         if (
-            last_x[predator] > EXTINCTION_THRESHOLD
-            and last_x[prey] > EXTINCTION_THRESHOLD
+            last_x[i] > EXTINCTION_THRESHOLD
+            and last_x[j] > EXTINCTION_THRESHOLD
         ):
             active_raw_A.append(A_raw_solution[k, -1])
             active_A.append(A_solution[k, -1])
@@ -334,6 +334,7 @@ for equation, clip_links in runs:
         f"Solver={METHOD}; rtol={RTOL:g}; atol={ATOL:g}; "
         f"max_step={MAX_STEP:g}\n"
         f"Link curves stop when either species becomes extinct."
+        f"gamma={gamma:g}"
     )
 
     fig, axes = plt.subplots(2, 1, figsize=(12, 10))
@@ -372,11 +373,11 @@ for equation, clip_links in runs:
 
     plotted_links_positive = np.all(A_solution > 0.0)
 
-    for k, (predator, prey) in enumerate(edges):
+    for k, (i, j) in enumerate(edges):
         axes[1].plot(
             sol.t,
             A_solution[k],
-            label=f"{predator + 1} eats {prey + 1}"
+            label=f"{i + 1} eats {j + 1}"
     )
 
 
