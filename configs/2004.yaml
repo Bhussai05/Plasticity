@@ -1,0 +1,27 @@
+# Equation used when answering no to the six-figure prompt.
+EVOLUTION_EQUATION: 5
+CLIP_LINKS: false
+
+# Initial food web (same seed and random draw order as the original script).
+seed: 7
+N: 20
+K: 5
+connection: 0.7
+n_autotrophs: 10
+
+# Population and link dynamics.
+b: 0.1
+c: 0.01
+epsilon: 0.01
+gamma: 5.0
+EXTINCTION_THRESHOLD: 1.0e-6
+
+# SciPy solver settings. .inf is YAML's representation of infinity.
+T_END: 10000.0
+METHOD: DOP853
+RTOL: 1.0e-6
+ATOL: 1.0e-9
+MAX_STEP: .inf
+
+# Destination for the six-figure run.
+DESKTOP_PATH: /Users/bilalhussain/Desktop
