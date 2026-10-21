@@ -124,9 +124,8 @@ def rates(t, y, c, K_1, epsilon, equation, clip_links):
             continue
 
         if equation == 5:
-            dA[k] = (
-                epsilon
-                * (x[j] - x[i])
+            dA[k] = epsilon * (
+                 (x[j] - x[i])
                 * A[k] - gamma * A[k]**2
             )
 
