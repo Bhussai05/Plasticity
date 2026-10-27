@@ -189,6 +189,13 @@ def plot_results(
     plotted_links_positive = np.all(A_solution > 0.0)
 
     for k, (i, j) in enumerate(edges):
+
+        if (
+        last_x[i] <= EXTINCTION_THRESHOLD
+        or last_x[j] <= EXTINCTION_THRESHOLD ):
+            continue
+
+
         axes[1].plot(
             sol.t,
             A_solution[k],
