@@ -12,7 +12,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1] / "src"))
 from plasticity.config import load_config
 from plasticity.model import initialize_web
 
-B_RANGE = (0.05, 1.0)
+B_RANGE = (0.01, 1.0)
 C_RANGE = (0.01, 10.0)
 GRID_SIZE = 5
 REFINE_ROUNDS = 2
