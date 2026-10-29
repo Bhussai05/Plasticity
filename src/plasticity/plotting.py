@@ -143,7 +143,7 @@ def plot_results(
         f"initial links={len(edges)}; "
         f"connection={connection:g}; seed={seed}\n"
         f"K={K:g}; b={b:g}; c={c:g}; epsilon={epsilon:g}; "
-        f"initial populations=U[1, 5]; "
+        f"initial populations: plants=1, animals={b:g}; "
         f"extinction={EXTINCTION_THRESHOLD:g}\n"
         f"Time requested={T_END:g}; "
         f"time reached={sol.t[-1]:.6g}; "

@@ -89,6 +89,7 @@ def main():
         config["N"],
         config["connection"],
         config["n_autotrophs"],
+        config["b"],
     )
     edges = np.asarray(original_edges, dtype=np.int64).reshape(-1, 2)
 
@@ -126,11 +127,15 @@ def main():
             flush=True,
         )
 
+        candidate_initial = initial.copy()
+        candidate_initial[:config["N"]] = np.where(autotroph, 1.0, b)
+
+
         try:
             sol = solve_ivp(
                 fast_rates,
                 (0.0, config["T_END"]),
-                initial.copy(),
+                candidate_initial,
                 args=solver_args(b, c),
                 method=config["METHOD"],
                 rtol=config["RTOL"],

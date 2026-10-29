@@ -7,11 +7,11 @@ seed: 7
 N: 100
 K: 5
 connection: 0.15
-n_autotrophs: 80
+n_autotrophs: 26
 
 # Population and link dynamics.
-b: 0.7
-c: 5.8
+b: 0.32571
+c: 0.910786
 epsilon: 0.001
 gamma: 0.0
 EXTINCTION_THRESHOLD: 1.0e-6

@@ -29,7 +29,7 @@ def main(argv=None):
     config = load_config(args.config)
 
     autotroph, edges, y_0 = initialize_web(
-        config["seed"], config["N"], config["connection"], config["n_autotrophs"],
+        config["seed"], config["N"], config["connection"], config["n_autotrophs"], config["b"],
     )
 
     answer = input(

@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def initialize_web(seed, N, connection, n_autotrophs):
+def initialize_web(seed, N, connection, n_autotrophs,b):
     """Build the initial web in the original random-number draw order."""
     rng = np.random.default_rng(seed=seed)
 
@@ -46,7 +46,7 @@ def initialize_web(seed, N, connection, n_autotrophs):
 
     A0 = np.array(A0, dtype=float)
 
-    x_0 = rng.uniform(1.0, 5.0, size=N)
+    x_0 = np.where(autotroph,1.0, b)
 
     y_0 = np.concatenate((x_0, A0))
 
