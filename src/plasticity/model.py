@@ -99,6 +99,11 @@ def rates(
 
     dx = x * relative_growth
 
+    L = env_strengths.copy()
+    for k, (i, j) in enumerate(edges):
+        L[i] += b * A[k]
+        L[j] += b * A[k]    
+
     dA = np.zeros(len(A))
 
     for k, (i, j) in enumerate(edges):
@@ -125,6 +130,11 @@ def rates(
 
         elif equation == 7:
             dA[k] = epsilon * x[j] * A[k]
+
+        elif equation == 8:
+            dA[k] = epsilon * A[k] * (
+            x[j] / L[j] - x[i] / L[i]
+            )
 
         if clip_links:
 

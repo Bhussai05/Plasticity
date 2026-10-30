@@ -1,5 +1,5 @@
 # Equation used when answering no to the six-figure prompt.
-EVOLUTION_EQUATION: 5
+EVOLUTION_EQUATION: 8
 CLIP_LINKS: false
 
 # Initial food web (same seed and random draw order as the original script).
@@ -12,7 +12,7 @@ n_autotrophs: 26
 b: 0.490785
 c: 0.360866
 epsilon: 0.001
-gamma: 1.0
+gamma: 0.0
 H: 10.0
 EXTINCTION_THRESHOLD: 1.0e-6
 

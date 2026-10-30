@@ -51,11 +51,17 @@ def fast_rates(
             growth[i] += (
                 1.0- c- x[i] / H- (env_pressure - env_strengths[i] * x[i] ) / H
         )
-    else:
-        growth[i] -= c
+        else:
+            growth[i] -= c
 
     result = np.zeros(len(y))
     result[:N] = x * growth
+
+    L = env_strengths.copy()
+    for k in range(len(edges)):
+        predator, prey = edges[k]
+        L[predator] += b * A[k]
+        L[prey] += b * A[k]
 
     for k in range(len(edges)):
         predator, prey = edges[k]
@@ -72,8 +78,12 @@ def fast_rates(
             change = epsilon * (
                 growth[prey] - growth[predator]
             ) * A[k]
-        else:  # Equation 7.
+        elif equation == 7: # Equation 7.
             change = epsilon * x[prey] * A[k]
+        elif equation == 8:
+            change = epsilon * A[k] * (
+                x[prey] / L[prey] - x[predator] / L[predator]
+            )
 
         if clip_links:
             if raw_A[k] >= 1.0 and change > 0.0:
