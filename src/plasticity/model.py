@@ -19,30 +19,20 @@ def initialize_web(seed, N, connection, n_autotrophs,b):
 
     edges = []
     A0 = []
-
     for u in range(N):
         for v in range(u + 1, N):
 
-            if autotroph[u] and autotroph[v]:
-                continue
-
             if rng.random() < connection:
-                alpha_0 = rng.random()
 
-                if autotroph[u]:
-                    i, j = v, u
+                signed = 1.0 - 2.0 * rng.random()
 
-                elif autotroph[v]:
-                    i, j = u, v
-
-                elif rng.random() < 0.5:
-                    i,j = u, v
-
+                if signed > 0:
+                    predator, prey = v, u
                 else:
-                    i,j = v, u
+                    predator, prey = u, v
 
-                edges.append((i, j))
-                A0.append(alpha_0)
+                edges.append((predator, prey))
+                A0.append(abs(signed))
 
     A0 = np.array(A0, dtype=float)
 
