@@ -12,7 +12,7 @@ def plot_results(
     seed = config["seed"]
     n_autotrophs = config["n_autotrophs"]
     connection = config["connection"]
-    K = config["K"]
+    H = config["H"]
     b = config["b"]
     c = config["c"]
     epsilon = config["epsilon"]
@@ -142,7 +142,7 @@ def plot_results(
         f"N={N}; autotrophs={n_autotrophs}; "
         f"initial links={len(edges)}; "
         f"connection={connection:g}; seed={seed}\n"
-        f"K={K:g}; b={b:g}; c={c:g}; epsilon={epsilon:g}; "
+        f"K={H:g}; b={b:g}; c={c:g}; epsilon={epsilon:g}; "
         f"initial populations: plants=1, animals={b:g}; "
         f"extinction={EXTINCTION_THRESHOLD:g}\n"
         f"Time requested={T_END:g}; "

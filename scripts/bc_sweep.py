@@ -21,8 +21,8 @@ SEARCH_SEED = 123
 
 @njit(cache=True)
 def fast_rates(
-    t, y, c, K, epsilon, equation, clip_links,
-    N, b, gamma, threshold, autotroph, edges,
+    t, y, c, H, epsilon, equation, clip_links,
+    N, b, gamma, threshold, autotroph, edges, env_strengths,
 ):
     
     x = y[:N].copy()
@@ -44,11 +44,15 @@ def fast_rates(
         growth[predator] += b * A[k] * x[prey]
         growth[prey] -= A[k] * x[predator]
 
+    env_pressure = np.dot(env_strengths, x)
+
     for i in range(N):
         if autotroph[i]:
-            growth[i] += 1.0 - x[i] / K
-        else:
-            growth[i] -= c
+            growth[i] += (
+                1.0- c- x[i] / H- (env_pressure - env_strengths[i] * x[i] ) / H
+        )
+    else:
+        growth[i] -= c
 
     result = np.zeros(len(y))
     result[:N] = x * growth
@@ -84,7 +88,7 @@ def fast_rates(
 def main():
     config = load_config()
 
-    autotroph, original_edges, initial = initialize_web(
+    autotroph, original_edges, initial, env_strengths = initialize_web(
         config["seed"],
         config["N"],
         config["connection"],
@@ -95,10 +99,10 @@ def main():
 
     def solver_args(b, c):
         return (
-            c, config["K"], config["epsilon"],
+            c, config["H"], config["epsilon"],
             config["EVOLUTION_EQUATION"], config["CLIP_LINKS"],
             config["N"], b, config["gamma"],
-            config["EXTINCTION_THRESHOLD"], autotroph, edges,
+            config["EXTINCTION_THRESHOLD"], autotroph, edges, env_strengths,
         )
 
     # Compile once before the search.

@@ -1,10 +1,10 @@
-"""Initialization and rate equations from the original 2004.py simulation."""
+"""Food-web initialization and dynamics with fixed environmental competition."""
 
 import numpy as np
 
 
 def initialize_web(seed, N, connection, n_autotrophs,b):
-    """Build the initial web in the original random-number draw order."""
+    """Return biological species, feeding links, state, and fixed environment links."""
     rng = np.random.default_rng(seed=seed)
 
     autotroph = np.zeros(N, dtype=bool)
@@ -50,14 +50,20 @@ def initialize_web(seed, N, connection, n_autotrophs,b):
 
     y_0 = np.concatenate((x_0, A0))
 
-    return autotroph, edges, y_0
+    # Draw these last to preserve the biological network's random draw order.
+    env_strengths = np.zeros(N)
+    env_strengths[autotroph] = np.abs(
+        1.0 - 2.0 * rng.random(np.count_nonzero(autotroph))
+    )
+
+    return autotroph, edges, y_0, env_strengths
 
 
 def rates(
-    t, y, c, K_1, epsilon, equation, clip_links,
-    N, b, gamma, EXTINCTION_THRESHOLD, autotroph, edges,
+    t, y, c, H, epsilon, equation, clip_links,
+    N, b, gamma, EXTINCTION_THRESHOLD, autotroph, edges, env_strengths,
 ):
-    """Compute the original population and link derivatives."""
+    """Compute population and biological link derivatives with a fixed environment."""
 
     x = y[:N].copy()
 
@@ -80,9 +86,14 @@ def rates(
 
     relative_growth = M @ x
 
+    env_pressure = np.dot(env_strengths, x)
+
     for i in range(N):
         if autotroph[i]:
-            relative_growth[i] += 1.0 - x[i] / K_1
+            relative_growth[i] += (
+                1.0 - c - x[i] / H
+                - (env_pressure - env_strengths[i] * x[i]) / H
+            )
         else:
             relative_growth[i] -= c
 

@@ -28,7 +28,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     config = load_config(args.config)
 
-    autotroph, edges, y_0 = initialize_web(
+    autotroph, edges, y_0, env_strengths = initialize_web(
         config["seed"], config["N"], config["connection"], config["n_autotrophs"], config["b"],
     )
 
@@ -57,10 +57,10 @@ def main(argv=None):
             (0.0, config["T_END"]),
             y_0.copy(),
             args=(
-                config["c"], config["K"], config["epsilon"],
+                config["c"], config["H"], config["epsilon"],
                 equation, clip_links,
                 config["N"], config["b"], config["gamma"],
-                config["EXTINCTION_THRESHOLD"], autotroph, edges,
+                config["EXTINCTION_THRESHOLD"], autotroph, edges, env_strengths,
             ),
             method=config["METHOD"],
             rtol=config["RTOL"],

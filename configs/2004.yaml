@@ -5,15 +5,15 @@ CLIP_LINKS: false
 # Initial food web (same seed and random draw order as the original script).
 seed: 7
 N: 100
-K: 5
 connection: 0.15
 n_autotrophs: 26
 
 # Population and link dynamics.
-b: 0.32571
-c: 0.910786
+b: 0.490785
+c: 0.360866
 epsilon: 0.001
-gamma: 0.0
+gamma: 1.0
+H: 10.0
 EXTINCTION_THRESHOLD: 1.0e-6
 
 # SciPy solver settings. .inf is YAML's representation of infinity.
