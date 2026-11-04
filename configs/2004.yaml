@@ -1,23 +1,26 @@
 # Equation used when answering no to the six-figure prompt.
 EVOLUTION_EQUATION: 8
-CLIP_LINKS: false
+CLIP_LINKS : True
+
+
+
 
 # Initial food web (same seed and random draw order as the original script).
 seed: 7
 N: 100
 connection: 0.15
-n_autotrophs: 26
+n_autotrophs: 20
 
 # Population and link dynamics.
-b: 0.490785
-c: 0.360866
-epsilon: 0.001
-gamma: 0.0
+b: 0.1
+c: 0.01
+epsilon: 0.1
+gamma: 0.5
 H: 10.0
 EXTINCTION_THRESHOLD: 1.0e-6
 
 # SciPy solver settings. .inf is YAML's representation of infinity.
-T_END: 10000.0
+T_END: 1000.0
 METHOD: DOP853
 RTOL: 1.0e-6
 ATOL: 1.0e-9

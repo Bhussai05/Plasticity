@@ -64,7 +64,7 @@ def rates(
     A_raw = y[N:]
 
     if clip_links:
-        A = np.clip(A_raw, 0.0, 1.0)
+        A = np.clip(A_raw, 1e-7, 1.0)
     else:
         A = A_raw
 
@@ -131,7 +131,7 @@ def rates(
             if A_raw[k] >= 1.0 and dA[k] > 0.0:
                 dA[k] = 0.0
 
-            if A_raw[k] <= 0.0 and dA[k] < 0.0:
+            if A_raw[k] <= 1e-7 and dA[k] < 0.0:
                 dA[k] = 0.0
 
     return np.concatenate((dx, dA))

@@ -5,7 +5,8 @@ from datetime import datetime
 from pathlib import Path
 import sys
 
-from scipy.integrate import solve_ivp
+from scipy.integrate import BDF, DOP853, LSODA, RK23, RK45, Radau, solve_ivp
+from tqdm import tqdm
 
 
 SRC_DIR = Path(__file__).resolve().parents[1] / "src"
@@ -15,6 +16,33 @@ if str(SRC_DIR) not in sys.path:
 from plasticity.config import DEFAULT_CONFIG, load_config
 from plasticity.model import initialize_web, rates
 from plasticity.plotting import plot_results
+
+
+SOLVER_TYPES = {
+    "RK23": RK23,
+    "RK45": RK45,
+    "DOP853": DOP853,
+    "Radau": Radau,
+    "BDF": BDF,
+    "LSODA": LSODA,
+}
+
+
+def _solver_with_progress(method, progress):
+    """Report accepted steps while preserving the selected solver's behavior."""
+    if method not in SOLVER_TYPES:
+        raise ValueError(f"Unsupported solver method: {method}")
+    solver_type = SOLVER_TYPES[method]
+
+    class ProgressSolver(solver_type):
+        def step(self):
+            previous_time = self.t
+            message = super().step()
+            if self.status != "failed":
+                progress.update(abs(self.t - previous_time))
+            return message
+
+    return ProgressSolver
 
 
 def main(argv=None):
@@ -51,27 +79,58 @@ def main(argv=None):
     else:
         runs = [(config["EVOLUTION_EQUATION"], config["CLIP_LINKS"])]
 
-    for equation, clip_links in runs:
-        sol = solve_ivp(
-            rates,
-            (0.0, config["T_END"]),
-            y_0.copy(),
-            args=(
-                config["c"], config["H"], config["epsilon"],
-                equation, clip_links,
-                config["N"], config["b"], config["gamma"],
-                config["EXTINCTION_THRESHOLD"], autotroph, edges, env_strengths,
-            ),
-            method=config["METHOD"],
-            rtol=config["RTOL"],
-            atol=config["ATOL"],
-            max_step=config["MAX_STEP"],
-        )
+    with tqdm(
+        runs, desc="Simulation runs", unit="run",
+        disable=not generate_all, position=0, dynamic_ncols=True,
+    ) as run_progress:
+        for equation, clip_links in run_progress:
+            with tqdm(
+                total=abs(config["T_END"]),
+                desc=f"Mode {equation}, clipping {'on' if clip_links else 'off'}",
+                unit="sim-t", unit_scale=True, dynamic_ncols=True,
+                position=1 if generate_all else 0, leave=not generate_all,
+            ) as integration_progress:
+                sol = solve_ivp(
+                    rates,
+                    (0.0, config["T_END"]),
+                    y_0.copy(),
+                    args=(
+                        config["c"], config["H"], config["epsilon"],
+                        equation, clip_links,
+                        config["N"], config["b"], config["gamma"],
+                        config["EXTINCTION_THRESHOLD"], autotroph, edges, env_strengths,
+                    ),
+                    method=_solver_with_progress(config["METHOD"], integration_progress),
+                    rtol=config["RTOL"],
+                    atol=config["ATOL"],
+                    max_step=config["MAX_STEP"],
+                )
 
-        plot_results(
-            sol, config, autotroph, edges, equation, clip_links,
-            generate_all, run_stamp,
-        )
+            species_summary = None
+            if sol.success:
+                alive = sol.y[:config["N"], -1] > config["EXTINCTION_THRESHOLD"]
+                surviving_autotrophs = int((alive & autotroph).sum())
+                surviving_heterotrophs = int((alive & ~autotroph).sum())
+                if surviving_heterotrophs:
+                    ratio = f"{surviving_autotrophs / surviving_heterotrophs:.6g}"
+                elif surviving_autotrophs:
+                    ratio = "inf; no surviving heterotrophs"
+                else:
+                    ratio = "undefined; no surviving species"
+
+                species_summary = (
+                    f"Surviving autotrophs: {surviving_autotrophs}; "
+                    f"heterotrophs: {surviving_heterotrophs}\n"
+                    f"Autotroph:heterotroph ratio: "
+                    f"{surviving_autotrophs}:{surviving_heterotrophs} ({ratio})"
+                )
+
+            with tqdm.external_write_mode(file=sys.stdout):
+                plot_results(
+                    sol, config, autotroph, edges, equation, clip_links,
+                    generate_all, run_stamp, species_summary=species_summary,
+                )
+                sys.stdout.flush()
 
 
 if __name__ == "__main__":

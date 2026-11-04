@@ -6,6 +6,7 @@ import numpy as np
 
 def plot_results(
     sol, config, autotroph, edges, equation, clip_links, generate_all, run_stamp,
+    species_summary=None,
 ):
     """Print the original diagnostics and display or save the original figures."""
     N = config["N"]
@@ -30,6 +31,9 @@ def plot_results(
 
     if not sol.success:
         raise RuntimeError(sol.message)
+
+    print(f"\nEquation: {equation}")
+    print("NumPy clipping:", clip_links)
 
     if clip_links:
         A_solution = np.clip(A_raw_solution, 0.0, 1.0)
@@ -91,12 +95,12 @@ def plot_results(
         last_x > EXTINCTION_THRESHOLD
     )
 
-    print(f"\nEquation: {equation}")
-    print("NumPy clipping:", clip_links)
     print("Solver success:", sol.success)
     print(sol.message)
     print("Last saved time:", sol.t[-1])
     print("Survivors:", survivors, "out of", N)
+    if species_summary is not None:
+        print(species_summary)
     print("Population range:", last_x.min(), last_x.max())
 
     active_raw_A = []
